@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estoque — Controle Simples</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Phosphor Icons CDN -->
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/index.js" defer></script>
+</head>
+<body>
+
+  <!-- ======== SIDEBAR ======== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <span class="brand-icon"><i class="ph-bold ph-package"></i></span>
+        <span class="brand-name">Estoquei</span>
+      </div>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Fechar menu">
+        <i class="ph-bold ph-x"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-section="dashboard">
+        <i class="ph-bold ph-squares-four"></i>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-section="cadastro">
+        <i class="ph-bold ph-plus-circle"></i>
+        <span>Cadastrar</span>
+      </button>
+      <button class="nav-item" data-section="produtos">
+        <i class="ph-bold ph-list-bullets"></i>
+        <span>Produtos</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <span class="version">v1.0.0</span>
+    </div>
+  </aside>
+
+  <!-- ======== OVERLAY (mobile) ======== -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ======== MAIN CONTENT ======== -->
+  <main class="main">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">
+        <i class="ph-bold ph-list"></i>
+      </button>
+      <h1 class="topbar-title" id="topbarTitle">Dashboard</h1>
+      <div class="topbar-right">
+        <div class="search-wrap" id="searchWrap" style="display:none">
+          <i class="ph-bold ph-magnifying-glass search-icon"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Pesquisar produto…" autocomplete="off" />
+        </div>
+      </div>
+    </header>
+
+    <!-- ---- SECTION: Dashboard ---- -->
+    <section class="section active" id="section-dashboard">
+      <div class="section-header">
+        <h2 class="section-title">Visão Geral</h2>
+        <p class="section-sub">Resumo do seu estoque agora</p>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card card--blue">
+          <div class="card-icon"><i class="ph-bold ph-archive-box"></i></div>
+          <div class="card-body">
+            <span class="card-label">Produtos cadastrados</span>
+            <span class="card-value" id="statTotal">0</span>
+          </div>
+        </div>
+        <div class="card card--teal">
+          <div class="card-icon"><i class="ph-bold ph-stack"></i></div>
+          <div class="card-body">
+            <span class="card-label">Itens em estoque</span>
+            <span class="card-value" id="statItens">0</span>
+          </div>
+        </div>
+        <div class="card card--amber">
+          <div class="card-icon"><i class="ph-bold ph-warning"></i></div>
+          <div class="card-body">
+            <span class="card-label">Estoque baixo (&lt; 5)</span>
+            <span class="card-value" id="statBaixo">0</span>
+          </div>
+        </div>
+        <div class="card card--green">
+          <div class="card-icon"><i class="ph-bold ph-currency-dollar"></i></div>
+          <div class="card-body">
+            <span class="card-label">Valor total</span>
+            <span class="card-value" id="statValor">R$ 0,00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Low stock alert list -->
+      <div class="panel" id="lowStockPanel" style="display:none">
+        <div class="panel-header">
+          <i class="ph-bold ph-warning-circle"></i>
+          <h3>Produtos com estoque baixo</h3>
+        </div>
+        <ul class="low-stock-list" id="lowStockList"></ul>
+      </div>
+    </section>
+
+    <!-- ---- SECTION: Cadastro ---- -->
+    <section class="section" id="section-cadastro">
+      <div class="section-header">
+        <h2 class="section-title">Cadastrar Produto</h2>
+        <p class="section-sub">Adicione um novo produto ao estoque</p>
+      </div>
+
+      <div class="form-card">
+        <form id="productForm" novalidate>
+          <!-- Hidden field for edit mode -->
+          <input type="hidden" id="editId" value="" />
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inputNome">Nome do produto <span class="req">*</span></label>
+              <input type="text" id="inputNome" placeholder="Ex: Camiseta Branca M" required maxlength="80" />
+              <span class="field-error" id="erroNome"></span>
+            </div>
+            <div class="form-group">
+              <label for="inputCategoria">Categoria <span class="req">*</span></label>
+              <input type="text" id="inputCategoria" list="catList" placeholder="Ex: Vestuário" required maxlength="40" />
+              <datalist id="catList" id="categoriaDatalist"></datalist>
+              <span class="field-error" id="erroCategoria"></span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="inputQtd">Quantidade <span class="req">*</span></label>
+              <input type="number" id="inputQtd" placeholder="0" min="0" required />
+              <span class="field-error" id="erroQtd"></span>
+            </div>
+            <div class="form-group">
+              <label for="inputPreco">Preço unitário (R$) <span class="req">*</span></label>
+              <input type="number" id="inputPreco" placeholder="0,00" min="0" step="0.01" required />
+              <span class="field-error" id="erroPreco"></span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn--ghost" id="btnCancelarEdit" style="display:none">
+              <i class="ph-bold ph-x"></i> Cancelar edição
+            </button>
+            <button type="submit" class="btn btn--primary" id="btnSubmit">
+              <i class="ph-bold ph-plus"></i>
+              <span id="btnSubmitLabel">Cadastrar Produto</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ---- SECTION: Produtos ---- -->
+    <section class="section" id="section-produtos">
+      <div class="section-header">
+        <h2 class="section-title">Produtos</h2>
+        <p class="section-sub">Gerencie e ajuste o estoque</p>
+      </div>
+
+      <!-- Search bar visible inside section too -->
+      <div class="search-bar-inline">
+        <i class="ph-bold ph-magnifying-glass"></i>
+        <input type="text" id="searchInputInline" class="search-input" placeholder="Pesquisar pelo nome…" autocomplete="off" />
+      </div>
+
+      <div class="table-wrap">
+        <table class="produto-table" id="produtoTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nome</th>
+              <th>Categoria</th>
+              <th>Qtd</th>
+              <th>Preço</th>
+              <th>Total</th>
+              <th>Estoque</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="produtoTbody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+        <div class="empty-state" id="emptyState">
+          <i class="ph-bold ph-tray"></i>
+          <p>Nenhum produto cadastrado ainda.<br>Use "Cadastrar" para adicionar o primeiro.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======== TOAST CONTAINER ======== -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ======== MODAL: Controle de Estoque ======== -->
+  <div class="modal-backdrop" id="stockModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Controle de Estoque</h3>
+        <button class="modal-close" id="modalClose" aria-label="Fechar"><i class="ph-bold ph-x"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-product-name" id="modalProductName"></p>
+        <p class="modal-stock-current">Estoque atual: <strong id="modalCurrentStock"></strong> unidades</p>
+        <div class="stock-control">
+          <button class="stock-btn stock-btn--remove" id="btnRemove" aria-label="Remover">
+            <i class="ph-bold ph-minus"></i>
+          </button>
+          <input type="number" id="stockQtyInput" class="stock-qty-input" value="1" min="1" />
+          <button class="stock-btn stock-btn--add" id="btnAdd" aria-label="Adicionar">
+            <i class="ph-bold ph-plus"></i>
+          </button>
+        </div>
+        <span class="field-error" id="erroStock"></span>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn--ghost" id="btnModalCancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
